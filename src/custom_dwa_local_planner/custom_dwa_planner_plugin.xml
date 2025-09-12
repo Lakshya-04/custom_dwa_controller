@@ -1,0 +1,9 @@
+<library path="custom_dwa_local_planner">
+  <class name="custom_dwa_local_planner/CustomDWAPlanner"
+         type="custom_dwa_local_planner::CustomDWAPlanner"
+         base_class_type="nav2_core::Controller">
+    <description>
+      A custom DWA local planner plugin.
+    </description>
+  </class>
+</library>
