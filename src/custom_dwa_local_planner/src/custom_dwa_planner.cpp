@@ -1,4 +1,4 @@
-#include "/custom/dwa_local_planner/custom_dwa_planner.hpp"
+#include "custom_dwa_planner.hpp"
 #include "pluginlib/class_list_macros.hpp"
 
 namespace custom_dwa_local_planner
