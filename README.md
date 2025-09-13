@@ -5,6 +5,15 @@ This project is a complete implementation of a custom **Dynamic Window Approach 
 The entire decision-making logic, from trajectory generation to the multi-objective cost function, is contained within this package, offering a transparent and deeply customizable alternative to the standard Nav2 controllers.
 
 ---
+## Demo Videos
+
+Custom DWA Controller
+[![Demo Video](https://img.youtube.com/vi/FDOr9OuVGTk/0.jpg)](https://youtu.be/FDOr9OuVGTk)
+
+Nav2 DWB Controller
+[![Demo Video 2](https://img.youtube.com/vi/1fDpRBxEuts/0.jpg)](https://youtu.be/1fDpRBxEuts)
+
+---
 
 ## Key Features & Concepts
 
