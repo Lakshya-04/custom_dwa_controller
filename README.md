@@ -72,22 +72,23 @@ In every new terminal, source your workspace first.
 source install/setup.bash
 ```
 
-**Terminal 1: Launch Gazebo & Robot**
-
+**Terminal 1: Launch Ignition Gazebo and RViz**
 ```bash
-# Launch your TurtleBot3 simulation environment
-ros2 launch turtlebot3_gazebo turtlebot3_world.launch.py
+ros2 launch turtlebot4_ignition_bringup turtlebot4_ignition.launch.py use_sim_time:=true rviz:=true
 ```
 
-**Terminal 2: Launch Nav2 with the Custom Planner**  
-This is the key step. We launch the Nav2 stack, telling it to use our custom parameter file, which loads the CustomDWAPlanner plugin.
-
+**Terminal 2: Launch SLAM**
 ```bash
-ros2 launch nav2_bringup bringup_launch.py \
-    use_sim_time:=true \
-    map:=/path/to/your/map.yaml \
-    params_file:=/path/to/your/custom_dwa_local_planner/config/custom_nav2_params.yaml
+ros2 launch turtlebot4_navigation slam.launch.py use_sim_time:=true
 ```
+
+**Terminal 3: Launch Nav2 with your custom DWA parameters**
+```bash
+ros2 launch turtlebot4_navigation nav2.launch.py use_sim_time:=true params_file:=$(ros2 pkg prefix custom_dwa_local_planner)/share/custom_dwa_local_planner/config/tb4_custom_nav2_params.yaml
+```
+
+> **Note:**  
+> Always source your workspace's `setup.bash` in every terminal before running these commands.
 
 ### 4. Navigate and Visualize!
 
