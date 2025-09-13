@@ -54,7 +54,15 @@ This entire process repeats at 10-20 Hz, allowing the robot to react dynamically
 - TurtleBot3 simulation packages.
 - Nav2 (`ros-humble-navigation2`) and its dependencies.
 
-### 2. Build the Package
+### 2. Install Python Dependencies
+
+Install required Python dependencies using the provided `requirements.txt` file:
+
+```bash
+pip install -r requirements.txt
+```
+
+### 3. Build the Package
 
 Navigate to your ROS 2 workspace, clone this repository into the `src` folder, and build the package.
 
@@ -63,7 +71,7 @@ Navigate to your ROS 2 workspace, clone this repository into the `src` folder, a
 colcon build --packages-select custom_dwa_local_planner
 ```
 
-### 3. Launch the Simulation
+### 4. Launch the Simulation
 
 In every new terminal, source your workspace first.
 
@@ -90,7 +98,7 @@ ros2 launch turtlebot4_navigation nav2.launch.py use_sim_time:=true params_file:
 > **Note:**  
 > Always source your workspace's `setup.bash` in every terminal before running these commands.
 
-### 4. Navigate and Visualize!
+### 5. Navigate and Visualize!
 
 In RViz, use the "2D Pose Estimate" button to initialize the robot's position on the map.
 
