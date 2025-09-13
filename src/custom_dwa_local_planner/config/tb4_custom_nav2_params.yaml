@@ -1,0 +1,34 @@
+# ~/custom_dwa_controller/src/custom_dwa_local_planner/config/tb4_custom_nav2_params.yaml
+
+controller_server:
+  ros__parameters:
+    use_sim_time: True
+    controller_frequency: 20.0
+    min_x_velocity_threshold: 0.001
+    min_y_velocity_threshold: 0.5
+    min_theta_velocity_threshold: 0.001
+
+    progress_checker_plugin: "progress_checker"
+    goal_checker_plugins: ["goal_checker"]
+
+    controller_plugins: ["CustomFollowPath"]
+
+    # Configuration for our custom controller plugin
+    CustomFollowPath:
+      plugin: "custom_dwa_local_planner/CustomDWAPlanner"
+      # Custom parameters can be added if needed, depending on Hardware
+      # max_speed_x: 0.26
+      # max_speed_theta: 1.0
+      
+    # Configuration for the progress checker
+    progress_checker:
+      plugin: "nav2_controller::SimpleProgressChecker"
+      required_movement_radius: 0.5
+      movement_time_allowance: 10.0
+
+    # Configuration for the goal checker
+    goal_checker:
+      plugin: "nav2_controller::SimpleGoalChecker"
+      xy_goal_tolerance: 0.25
+      yaw_goal_tolerance: 0.25
+      stateful: True
