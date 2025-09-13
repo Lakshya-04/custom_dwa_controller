@@ -85,10 +85,6 @@ void CustomDWAPlanner::setPlan(const nav_msgs::msg::Path & path) {
   global_plan_ = path;
 }
 
-
-
-
-// Replace your computeVelocityCommands with this complete version:
 geometry_msgs::msg::TwistStamped CustomDWAPlanner::computeVelocityCommands(
   const geometry_msgs::msg::PoseStamped & pose,
   const geometry_msgs::msg::Twist & velocity,
@@ -135,7 +131,6 @@ geometry_msgs::msg::TwistStamped CustomDWAPlanner::computeVelocityCommands(
     ++lookahead_it;
   }
 
-  // NEW: Calculate current distance to the lookahead point to measure progress
   double current_dist_to_lookahead = std::hypot(pose.pose.position.x - lookahead_pose.pose.position.x,
                                                 pose.pose.position.y - lookahead_pose.pose.position.y);
 
@@ -144,8 +139,7 @@ geometry_msgs::msg::TwistStamped CustomDWAPlanner::computeVelocityCommands(
     if (v_step == 0.0) { v = max_v; }
     for (double w = min_w; w <= max_w; w += w_step) {
       if (w_step == 0.0) { w = max_w; }
-      
-      // ... (Trajectory Simulation remains the same)
+
       std::vector<geometry_msgs::msg::Pose2D> trajectory;
       geometry_msgs::msg::Pose2D current_pose;
       current_pose.x = 0; current_pose.y = 0; current_pose.theta = 0;
@@ -159,7 +153,6 @@ geometry_msgs::msg::TwistStamped CustomDWAPlanner::computeVelocityCommands(
       
       // 4. COST FUNCTION EVALUATION
       double occ_cost = 0.0;
-      // ... (Obstacle checking remains the same)
       for(const auto& p : trajectory) {
           double world_x = pose.pose.position.x + p.x * cos(tf2::getYaw(pose.pose.orientation)) - p.y * sin(tf2::getYaw(pose.pose.orientation));
           double world_y = pose.pose.position.y + p.x * sin(tf2::getYaw(pose.pose.orientation)) + p.y * cos(tf2::getYaw(pose.pose.orientation));
@@ -184,11 +177,9 @@ geometry_msgs::msg::TwistStamped CustomDWAPlanner::computeVelocityCommands(
       double final_global_theta = tf2::getYaw(pose.pose.orientation) + trajectory.back().theta;
       double heading_cost = std::abs(angles::shortest_angular_distance(final_global_theta, angle_to_lookahead));
       
-      // NEW: Cost for making progress toward the goal.
-      // A negative value means the trajectory moved closer (good), positive means it moved farther (bad).
+      // A negative value means the trajectory moved closer, positive means it moved farther.
       double progress_cost = goal_dist_cost - current_dist_to_lookahead;
 
-      // UPDATED: Final combined cost
       double cost = progress_scale_ * progress_cost +
                     goal_dist_scale_ * goal_dist_cost +
                     path_dist_scale_ * path_dist_cost +
@@ -223,7 +214,6 @@ geometry_msgs::msg::TwistStamped CustomDWAPlanner::computeVelocityCommands(
   }
   traj_pub_->publish(markers);
 
-  // ... (Publishing markers and returning cmd_vel remains the same)
   // 5. RETURN BEST VELOCITY
   geometry_msgs::msg::TwistStamped cmd_vel;
   cmd_vel.header.stamp = clock_->now();
@@ -237,7 +227,7 @@ geometry_msgs::msg::TwistStamped CustomDWAPlanner::computeVelocityCommands(
 
 void CustomDWAPlanner::setSpeedLimit(const double & /*speed_limit*/, const bool & /*percentage*/)
 {
-  // This can be used to dynamically change max_speed_x_ if needed
+  // dynamically change max_speed_x_ 
 }
 
 }  // namespace custom_dwa_local_planner
