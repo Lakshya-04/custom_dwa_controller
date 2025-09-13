@@ -8,6 +8,10 @@
 namespace custom_dwa_local_planner
 {
 
+/// @brief Configure the DWA planner plugin with parameters and publishers.
+/// This method initializes all tunable parameters for the DWA algorithm,
+/// including velocity/acceleration limits, cost function weights, and
+/// sets up the visualization publisher for trajectory markers.
 void CustomDWAPlanner::configure(
   const rclcpp_lifecycle::LifecycleNode::WeakPtr & parent,
   std::string name, std::shared_ptr<tf2_ros::Buffer> tf,
@@ -66,30 +70,48 @@ void CustomDWAPlanner::configure(
   traj_pub_ = node->create_publisher<visualization_msgs::msg::MarkerArray>("local_trajectories", 1);
 }
 
+/// @brief Activate the planner and its publishers.
+/// Called when the lifecycle node transitions to active.
 void CustomDWAPlanner::activate() {
   RCLCPP_INFO(logger_, "Activating plugin %s", plugin_name_.c_str());
   traj_pub_->on_activate();
 }
 
+/// @brief Deactivate the planner and its publishers.
+/// Called when the lifecycle node transitions to inactive.
 void CustomDWAPlanner::deactivate() {
   RCLCPP_INFO(logger_, "Deactivating plugin %s", plugin_name_.c_str());
   traj_pub_->on_deactivate();
 }
 
+/// @brief Cleanup resources used by the planner.
+/// Called when the lifecycle node transitions to finalized.
 void CustomDWAPlanner::cleanup() {
   RCLCPP_INFO(logger_, "Cleaning up plugin %s", plugin_name_.c_str());
   traj_pub_.reset();
 }
 
+/// @brief Set the global plan for the local planner to follow.
+/// @param path The global path as a sequence of poses.
 void CustomDWAPlanner::setPlan(const nav_msgs::msg::Path & path) {
   global_plan_ = path;
 }
 
+/// @brief Core method: Compute the best velocity command using DWA.
+/// This function samples possible (v, w) pairs within the dynamic window,
+/// simulates trajectories, evaluates them with a multi-objective cost function,
+/// and selects the optimal command. Also publishes all sampled trajectories
+/// for visualization in RViz.
+/// @param pose Current robot pose.
+/// @param velocity Current robot velocity.
+/// @param goal_checker Not used here.
+/// @return The best velocity command as a TwistStamped.
 geometry_msgs::msg::TwistStamped CustomDWAPlanner::computeVelocityCommands(
   const geometry_msgs::msg::PoseStamped & pose,
   const geometry_msgs::msg::Twist & velocity,
   nav2_core::GoalChecker * /*goal_checker*/)
 {
+  // --- Safety: Stop if no plan ---
   if (global_plan_.poses.empty()) {
     RCLCPP_WARN(logger_, "Global plan is empty, stopping robot");
     geometry_msgs::msg::TwistStamped cmd_vel;
@@ -100,7 +122,8 @@ geometry_msgs::msg::TwistStamped CustomDWAPlanner::computeVelocityCommands(
     return cmd_vel;
   }
 
-  // 1. DYNAMIC WINDOW CALCULATION
+  // --- 1. Dynamic Window Calculation ---
+  // Compute the range of velocities (v, w) the robot can achieve given its current state and limits.
   double min_v = std::max(min_speed_x_, velocity.linear.x - acc_lim_x_ * sim_time_);
   double max_v = std::min(max_speed_x_, velocity.linear.x + acc_lim_x_ * sim_time_);
   double min_w = std::max(min_speed_theta_, velocity.angular.z - acc_lim_theta_ * sim_time_);
@@ -134,7 +157,12 @@ geometry_msgs::msg::TwistStamped CustomDWAPlanner::computeVelocityCommands(
   double current_dist_to_lookahead = std::hypot(pose.pose.position.x - lookahead_pose.pose.position.x,
                                                 pose.pose.position.y - lookahead_pose.pose.position.y);
 
-  // 2. TRAJECTORY SAMPLING AND EVALUATION
+  // --- 2. Lookahead Point Selection ---
+  // Find a point ahead on the global path to serve as the local goal for smoother tracking.
+
+  // --- 3. Trajectory Sampling and Evaluation ---
+  // For each (v, w) pair, simulate the resulting trajectory and evaluate its cost.
+  // The cost function combines progress, path adherence, heading, and obstacle avoidance.
   for (double v = min_v; v <= max_v; v += v_step) {
     if (v_step == 0.0) { v = max_v; }
     for (double w = min_w; w <= max_w; w += w_step) {
@@ -151,7 +179,7 @@ geometry_msgs::msg::TwistStamped CustomDWAPlanner::computeVelocityCommands(
         trajectory.push_back(current_pose);
       }
       
-      // 4. COST FUNCTION EVALUATION
+      // --- 4. COST FUNCTION EVALUATION ---
       double occ_cost = 0.0;
       for(const auto& p : trajectory) {
           double world_x = pose.pose.position.x + p.x * cos(tf2::getYaw(pose.pose.orientation)) - p.y * sin(tf2::getYaw(pose.pose.orientation));
@@ -214,7 +242,7 @@ geometry_msgs::msg::TwistStamped CustomDWAPlanner::computeVelocityCommands(
   }
   traj_pub_->publish(markers);
 
-  // 5. RETURN BEST VELOCITY
+  // --- 5. Return Best Velocity Command ---
   geometry_msgs::msg::TwistStamped cmd_vel;
   cmd_vel.header.stamp = clock_->now();
   cmd_vel.header.frame_id = costmap_ros_->getBaseFrameID();
@@ -224,7 +252,8 @@ geometry_msgs::msg::TwistStamped CustomDWAPlanner::computeVelocityCommands(
   return cmd_vel;
 }
 
-
+/// @brief (Optional) Dynamically adjust the speed limit.
+/// Not implemented
 void CustomDWAPlanner::setSpeedLimit(const double & /*speed_limit*/, const bool & /*percentage*/)
 {
   // dynamically change max_speed_x_ 
@@ -232,4 +261,5 @@ void CustomDWAPlanner::setSpeedLimit(const double & /*speed_limit*/, const bool 
 
 }  // namespace custom_dwa_local_planner
 
+/// @brief Export the plugin for use in the ROS2
 PLUGINLIB_EXPORT_CLASS(custom_dwa_local_planner::CustomDWAPlanner, nav2_core::Controller)

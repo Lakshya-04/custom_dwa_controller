@@ -1,5 +1,8 @@
-.git
+.git/
 .gitignore
 *.md
 Dockerfile*
 .dockerignore
+build/
+install/
+log/

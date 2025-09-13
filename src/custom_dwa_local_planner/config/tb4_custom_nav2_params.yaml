@@ -11,10 +11,10 @@ controller_server:
     progress_checker_plugin: "progress_checker"
     goal_checker_plugins: ["goal_checker"]
 
-    controller_plugins: ["CustomFollowPath"]
+    controller_plugins: ["FollowPath"]
 
     # Configuration for our custom controller plugin
-    CustomFollowPath:
+    FollowPath:
       plugin: "custom_dwa_local_planner/CustomDWAPlanner"
       # Custom parameters can be added if needed, depending on Hardware
       # max_speed_x: 0.26
